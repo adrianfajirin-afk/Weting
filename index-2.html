@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agis & Ilmi Wedding Guestbook</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f7f3ed;color:#333}
+.banner img{width:100%;height:260px;object-fit:cover;display:block}
+.hero{text-align:center;padding:20px}
+.hero h1{margin:5px 0;font-size:38px}
+.date{color:#8c6b2f;font-weight:bold}
+.card{background:#fff;margin:15px;border-radius:20px;padding:15px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.btn{width:100%;padding:14px;border:none;border-radius:999px;margin:6px 0;font-size:16px;cursor:pointer}
+video,img.preview{width:100%;border-radius:12px}
+.feed{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.feed img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px}
+.footer{text-align:center;padding:25px;color:#777}
+</style>
+</head>
+<body>
+
+<div class="banner">
+<img src="prewed.jpg" alt="Agis Ilmi">
+</div>
+
+<div class="hero">
+<h3>🤍 THE WEDDING OF 🤍</h3>
+<h1>Agis & Ilmi</h1>
+<p class="date">💍 Kamis, 26 Maret 2026</p>
+<p>📸 Virtual Photobooth & 🎤 Voice Guestbook</p>
+</div>
+
+<div class="card">
+<h3>📸 Ambil Foto</h3>
+<video id="video" autoplay playsinline></video>
+<img id="preview" class="preview" style="display:none">
+<button class="btn" onclick="startCam()">📷 Buka Kamera</button>
+<button class="btn" onclick="takePhoto()">✨ Jepret Foto</button>
+<button class="btn" onclick="addFeed()">❤️ Tambah ke Feed</button>
+</div>
+
+<div class="card">
+<h3>🎤 Voice Note</h3>
+<button class="btn" onclick="startRec()">🎙️ Mulai Rekam</button>
+<button class="btn" onclick="stopRec()">⏹️ Stop Rekam</button>
+<p id="status">Belum merekam</p>
+<audio id="audio" controls style="width:100%"></audio>
+</div>
+
+<div class="card">
+<h3>🖼️ Memories Feed</h3>
+<div id="feed" class="feed"></div>
+</div>
+
+<div class="footer">Made with ❤️ by Sandi Photobooth</div>
+
+<script>
+let photoData=null;
+let recorder;
+let chunks=[];
+
+async function startCam(){
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+  document.getElementById('video').srcObject=stream;
+ }catch(e){
+  alert('Kamera tidak bisa diakses. Pastikan dibuka dari GitHub Pages HTTPS.');
+ }
+}
+
+function takePhoto(){
+ const v=document.getElementById('video');
+ const c=document.createElement('canvas');
+ c.width=v.videoWidth||640;
+ c.height=v.videoHeight||480;
+ c.getContext('2d').drawImage(v,0,0);
+ photoData=c.toDataURL('image/jpeg');
+ const p=document.getElementById('preview');
+ p.src=photoData;
+ p.style.display='block';
+}
+
+function addFeed(){
+ if(!photoData){alert('Jepret foto dulu');return;}
+ const img=document.createElement('img');
+ img.src=photoData;
+ document.getElementById('feed').prepend(img);
+}
+
+async function startRec(){
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recorder=new MediaRecorder(stream);
+  chunks=[];
+  recorder.ondataavailable=e=>chunks.push(e.data);
+  recorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:'audio/webm'});
+    document.getElementById('audio').src=URL.createObjectURL(blob);
+    document.getElementById('status').innerText='Voice note siap diputar';
+  };
+  recorder.start();
+  document.getElementById('status').innerText='Sedang merekam...';
+ }catch(e){
+  alert('Mikrofon tidak bisa diakses.');
+ }
+}
+
+function stopRec(){
+ if(recorder) recorder.stop();
+}
+</script>
+</body>
+</html>
